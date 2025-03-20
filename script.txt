@@ -1,1 +1,1 @@
-gcc -o main.exe main.c chunk.c debug.c memory.c value.c && ./main.exe
+gcc -o main.exe main.c chunk.c debug.c memory.c value.c vm.c && ./main.exe
