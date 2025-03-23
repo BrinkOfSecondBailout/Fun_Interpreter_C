@@ -5,6 +5,10 @@
 #include "compiler.h"
 #include "scanner.h"
 
+#ifdef DEBUG_PRINT_CODE
+#include "debug.h"
+#endif
+
 Parser parser;
 Chunk *compilingChunk;
 
@@ -58,6 +62,10 @@ static uint8_t makeConstant(Value value) {
 static void emitConstant(Value value) {
     emitBytes(OP_CONSTANT, makeConstant(value));
 }
+
+static void expression();
+static ParseRule* getRule(TokenType type);
+static void parsePrecedence(Precedence precedence);
 
 static void binary() {
     TokenType operatorType = parser.previous.type;
@@ -126,11 +134,23 @@ ParseRule rules[] = {
 };
 
 static ParseRule *getRule(TokenType type) {
-
+    return &rules[type];
 }
 
 static void parsePrecedence(Precedence precedence) {
+    advance();
+    ParseFn prefixRule = getRule(parser.previous.type)->prefix;
+    if (prefixRule == NULL) {
+        error("Expect expression.");
+        return;
+    }
+    prefixRule();
 
+    while (precedence <= getRule(parser.current.type)->precedence) {
+        advance();
+        ParseFn infixRule = getRule(parser.previous.type)->infix;
+        infixRule();
+    }
 }
 
 static void grouping() {
@@ -155,9 +175,6 @@ static void consume(TokenType type, const char *message) {
     errorAtCurrent(message);
 }
 
-
-
-
 static void advance() {
     parser.previous = parser.current;
 
@@ -168,8 +185,13 @@ static void advance() {
     }
 }
 
-static void endCompile() {
+static void endCompiler() {
     emitByte(OP_RETURN);
+    #ifdef DEBUG_PRINT_CODE
+        if (!parser.hadError) {
+            disAssembleChunk(currentChunk(), "code");
+        }
+    #endif
 }
 
 bool compile(const char *source, Chunk *chunk) {
