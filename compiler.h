@@ -1,6 +1,7 @@
 #ifndef compiler_h
 #define compiler_h
 
+#include "scanner.h"
 #include "vm.h"
 
 typedef struct {

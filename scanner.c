@@ -66,6 +66,10 @@ static Token string() {
     return makeToken(TOKEN_STRING);
 }
 
+static bool isDigit(char c) {
+    return c >= '0' && c <= '9';
+}
+
 static Token number() {
     while (isDigit(peek())) advance();
     if (peek() == '.' && isDigit(peekNext())) {
@@ -77,7 +81,7 @@ static Token number() {
 
 static TokenType checkKeyword(int start, int length, const char *remaining, TokenType type) {
     if (scanner.current - scanner.start == start + length 
-        && memcmp(scanner.start + start, remaining, length == 0)) {
+        && memcmp(scanner.start + start, remaining, length) == 0) {
         return type;
     }
     return TOKEN_IDENTIFIER;
@@ -117,22 +121,18 @@ static TokenType identifierType() {
     return TOKEN_IDENTIFIER;
 }
 
-static Token identifier() {
-    while (isAlpha(peek()) || isDigit(peek())) advance();
-    return makeToken(identifierType());
-}
-
-static bool isDigit(char c) {
-    return c >= '0' && c <= '9';
-}
-
 static bool isAlpha(char c) {
     return (c >= 'a' && c <= 'z') ||
            (c >= 'A' && c <= 'Z') ||
            c == '_';
 }
 
-static void skipWhitespace() {
+static Token identifier() {
+    while (isAlpha(peek()) || isDigit(peek())) advance();
+    return makeToken(identifierType());
+}
+
+static void skipWhiteSpace() {
     for (;;) {
         char c = peek();
         switch (c) {
