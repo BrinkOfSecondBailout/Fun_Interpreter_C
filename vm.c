@@ -31,10 +31,12 @@ static Value peek(int distance) {
 void initVm() {
     resetStack();
     vm.objects = NULL;
+    initTable(&vm.strings);
 }
 
 void freeVm() {
     freeObjects();
+    freeTable(&vm.strings);
 }
 
 static void concatenate() {

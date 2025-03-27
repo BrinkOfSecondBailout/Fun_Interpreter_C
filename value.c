@@ -3,6 +3,7 @@
 
 #include "memory.h"
 #include "object.h"
+#include "table.h"
 #include "value.h"
 
 void initValueArray(ValueArray *array) {
@@ -45,6 +46,22 @@ bool valuesEqual(Value a, Value b) {
         case VAL_BOOL:      return AS_BOOL(a) == AS_BOOL(b);
         case VAL_NUMBER:    return AS_NUMBER(a) == AS_NUMBER(b);
         case VAL_NIL:       return true;
+        case VAL_OBJ:       return AS_OBJ(a) == AS_OBJ(b);
         default:            return false;
+    }
+}
+
+ObjString *tableFindString(Table *table, const char *chars, int length, uint32_t hash) {
+    if (table->count == 0) return NULL;
+    uint32_t index = hash % table->capacity;
+    for (;;) {
+        Entry *entry = &table->entries[index];
+        if (entry->key == NULL) {
+            if (IS_NIL(entry->value)) return NULL;
+        } else if (entry->key->length == length && 
+        memcmp(entry->key->chars, chars, length) == 0) {
+            return entry->key;
+        }
+        index = (index + 1) % table->capacity;
     }
 }
