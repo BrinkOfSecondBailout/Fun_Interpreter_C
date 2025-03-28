@@ -13,8 +13,6 @@ typedef enum {
     INTERPRET_RUNTIME_ERROR
 } InterpretResult;
 
-extern VM vm;
-
 typedef struct {
     Chunk *chunk;
     uint8_t *ip;
@@ -22,7 +20,10 @@ typedef struct {
     Value *stackTop;
     Obj *objects;
     Table strings;
+    Table globals;
 } VM;
+
+extern VM vm;
 
 void initVm();
 void freeVm();

@@ -18,7 +18,7 @@ static Obj* allocateObject(size_t size, ObjType type) {
     return object;
 }
 
-ObjString *allocateString(const char *chars, int length, uint32_t hash) {
+ObjString *allocateString(char *chars, int length, uint32_t hash) {
     ObjString* string = ALLOCATE_OBJ(ObjString, OBJ_STRING);
     string->length = length;
     string->chars = chars;
