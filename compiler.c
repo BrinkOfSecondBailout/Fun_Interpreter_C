@@ -502,28 +502,34 @@ static void switchStatement() {
     expression();
     consume(TOKEN_RIGHT_PAREN, "Expect ')' after expression.");
     consume(TOKEN_LEFT_BRACE, "Expect '{' before switch body.");
-    int endJump = -1;
-    bool found = false;
+    int exitJump = -1;
+    int falseJump = -1;
+    int caseCount = 0;
+    if (!check(TOKEN_CASE)) {
+        error("'Case' expected for switch statement.");
+    }
     while (match(TOKEN_CASE)) {
+        caseCount++;
+        // if (caseCount > 2) emitByte(OP_POP);
+
         consume(TOKEN_LEFT_PAREN, "Expect '(' before case expression.");
         expression();
         consume(TOKEN_RIGHT_PAREN, "Expect ')' after case expression.");
         consume(TOKEN_COLON, "Expect ':'.");
-        int nextJump = emitJump(OP_JUMP_IF_NOT_MATCH);
+        falseJump = emitJump(OP_JUMP_IF_NOT_MATCH);
+        // emitByte(OP_POP);
         statement();
-        found = true;
-        int endJump = emitJump(OP_JUMP);
-        patchJump(nextJump);
-        emitByte(OP_POP);
-        patchJump(endJump);
+        exitJump = emitJump(OP_JUMP);
+        patchJump(falseJump);
+        // emitByte(OP_POP);
     }
-    if (found) endJump = emitJump(OP_JUMP);
     if (match(TOKEN_DEFAULT)) {
         consume(TOKEN_COLON, "Expect ':' after default.");
         statement();
     }
-    if (found) patchJump(endJump);
     consume(TOKEN_RIGHT_BRACE, "Expect '}' after switch body.");
+    patchJump(exitJump);
+    emitByte(OP_POP);
 }
 
 static void statement() {
