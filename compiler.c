@@ -499,36 +499,50 @@ static void forStatement() {
 
 static void switchStatement() {
     consume(TOKEN_LEFT_PAREN, "Expect '(' after switch.");
-    expression();
+    expression(); // evaluate switch value and leave on stack
     consume(TOKEN_RIGHT_PAREN, "Expect ')' after expression.");
     consume(TOKEN_LEFT_BRACE, "Expect '{' before switch body.");
-    int exitJump = -1;
-    int falseJump = -1;
-    int caseCount = 0;
-    if (!check(TOKEN_CASE)) {
-        error("'Case' expected for switch statement.");
-    }
-    while (match(TOKEN_CASE)) {
-        caseCount++;
-        // if (caseCount > 2) emitByte(OP_POP);
 
+    int exitJump = -1;
+
+    if (!check(TOKEN_CASE) && !check(TOKEN_DEFAULT)) {
+        error("'case' or 'default' expected in switch.");
+    }
+
+    while (match(TOKEN_CASE)) {
         consume(TOKEN_LEFT_PAREN, "Expect '(' before case expression.");
         expression();
         consume(TOKEN_RIGHT_PAREN, "Expect ')' after case expression.");
         consume(TOKEN_COLON, "Expect ':'.");
-        falseJump = emitJump(OP_JUMP_IF_NOT_MATCH);
-        // emitByte(OP_POP);
+
+        // Compare top two values on the stack
+        int falseJump = emitJump(OP_JUMP_IF_NOT_MATCH);
+
+        // Pop case value after match check (we no longer need it)
+        emitByte(OP_POP);
+
+        // Body of matched case
         statement();
-        exitJump = emitJump(OP_JUMP);
+
+        // After executing a case, jump to the end of the switch
+        int endJump = emitJump(OP_JUMP);
+
+        // Patch falseJump to here — if the match failed
         patchJump(falseJump);
-        // emitByte(OP_POP);
+        emitByte(OP_POP);
+
+        // Continue comparing with other cases
+        exitJump = endJump;
+        patchJump(endJump);
     }
+
     if (match(TOKEN_DEFAULT)) {
         consume(TOKEN_COLON, "Expect ':' after default.");
         statement();
     }
+
     consume(TOKEN_RIGHT_BRACE, "Expect '}' after switch body.");
-    patchJump(exitJump);
+
     emitByte(OP_POP);
 }
 

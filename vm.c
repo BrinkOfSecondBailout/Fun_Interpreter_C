@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "common.h"
 #include "compiler.h"
@@ -15,17 +16,41 @@ static void resetStack() {
 }
 
 void push(Value value) {
+    if (vm.stackTop - vm.stack >= STACK_MAX) {
+        fprintf(stderr, "STACK OVERFLOW on push()\n");
+        exit(1);
+    }
     *vm.stackTop = value;
     vm.stackTop++;
 }
 
 Value pop() {
+    if (vm.stackTop == vm.stack) {
+        fprintf(stderr, "STACK UNDERFLOW on pop()\n");
+        exit(1);
+    }
     vm.stackTop--;
     return *vm.stackTop;
 }
 
 static Value peek(int distance) {
-    return vm.stackTop[- 1 - distance];
+    if (vm.stackTop - vm.stack <= distance) {
+        fprintf(stderr, "STACK UNDERFLOW on peek(%d)\n", distance);
+        fprintf(stderr, "Stack size: %ld\n", vm.stackTop - vm.stack);
+
+        // Print full stack contents for debug
+        fprintf(stderr, "Stack contents (bottom to top):\n");
+        for (Value* slot = vm.stack; slot < vm.stackTop; slot++) {
+            fprintf(stderr, "[ ");
+            printValue(*slot);
+            fprintf(stderr, " ] ");
+        }
+        fprintf(stderr, "\n");
+
+        exit(1); // Clean crash for diagnostics
+    }
+
+    return vm.stackTop[-1 - distance];
 }
 
 void initVm() {
@@ -197,8 +222,14 @@ static InterpretResult run() {
                 break;
             }
             case OP_JUMP_IF_NOT_MATCH: {
+                if (vm.stackTop - vm.stack < 2) {
+                    fprintf(stderr, "STACK TOO SHALLOW for OP_JUMP_IF_NOT_MATCH\n");
+                    exit(1);
+                }
                 uint16_t offset = READ_SHORT();
-                if (!valuesEqual(peek(0), peek(1))) vm.ip += offset;
+                if (!valuesEqual(peek(0), peek(1))) {
+                    vm.ip += offset;
+                }
                 break;
             }
             case OP_LOOP: {
