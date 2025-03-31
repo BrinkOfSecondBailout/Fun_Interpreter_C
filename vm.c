@@ -55,6 +55,7 @@ static Value peek(int distance) {
 
 void initVm() {
     resetStack();
+    vm.flag = false;
     vm.objects = NULL;
     initTable(&vm.strings);
     initTable(&vm.globals);
@@ -228,6 +229,15 @@ static InterpretResult run() {
                 }
                 uint16_t offset = READ_SHORT();
                 if (!valuesEqual(peek(0), peek(1))) {
+                    vm.flag = !vm.flag;
+                    vm.ip += offset;
+                }
+                break;
+            }
+            case OP_JUMP_IF_FLAGGED: {
+                uint16_t offset = READ_SHORT();
+                if (vm.flag) {
+                    vm.flag = !vm.flag;
                     vm.ip += offset;
                 }
                 break;
