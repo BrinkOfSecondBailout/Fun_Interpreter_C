@@ -502,6 +502,7 @@ static void switchStatement() {
     expression();
     consume(TOKEN_RIGHT_PAREN, "Expect ')' after expression.");
     consume(TOKEN_LEFT_BRACE, "Expect '{' before switch body.");
+    int defaultCount = 0;
 
     while (!match(TOKEN_RIGHT_BRACE)) {
         if (match(TOKEN_CASE)) {
@@ -517,6 +518,8 @@ static void switchStatement() {
             emitByte(OP_POP);
             patchJump(matchJump);
         } else if (match(TOKEN_DEFAULT)) {
+            defaultCount++;
+            if (defaultCount > 1) error("Too many defaults, only one is permitted per switch.");
             int exitJump = emitJump(OP_JUMP_IF_FLAGGED);
             consume(TOKEN_COLON, "Expect ':' after default.");
             statement();

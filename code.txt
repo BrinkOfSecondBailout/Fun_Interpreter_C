@@ -5,5 +5,7 @@ switch (a) {
     case (2): print 2;
     case (3): print 3;
     case (4): print 4;
-    default: print "none"; 
+    default: print "none";
 }
+
+print "hi";
