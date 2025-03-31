@@ -1,4 +1,4 @@
-var a = 5;
+var a = 2;
 
 switch (a) {
     case (1): print 1;
@@ -7,5 +7,3 @@ switch (a) {
     case (4): print 4;
     default: print "none";
 }
-
-print "hi";
