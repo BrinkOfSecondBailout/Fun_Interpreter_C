@@ -1,9 +1,5 @@
-var a = 2;
-
-switch (a) {
-    case (1): print 1;
-    case (2): print 2;
-    case (3): print 3;
-    case (4): print 4;
-    default: print "none";
+fun areWeHavingItYet() {
+  print "Yes we are!";
 }
+
+print areWeHavingItYet;
