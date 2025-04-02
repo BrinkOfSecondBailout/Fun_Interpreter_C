@@ -30,6 +30,7 @@ typedef enum {
     OP_JUMP_IF_NOT_MATCH,
     OP_JUMP_IF_FLAGGED,
     OP_LOOP,
+    OP_CALL,
     OP_RETURN,
 } OpCode;
 
