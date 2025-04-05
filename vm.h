@@ -27,7 +27,12 @@ typedef struct {
     Value stack[STACK_MAX];
     Value *stackTop;
     Obj *objects;
+    int grayCount;
+    int grayCapacity;
+    Obj** grayStack;
     ObjUpvalue* openUpvalues;
+    size_t bytesAllocated;
+    size_t nextGC;
     Table strings;
     Table globals;
     bool flag;

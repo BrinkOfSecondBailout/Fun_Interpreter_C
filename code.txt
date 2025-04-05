@@ -3,9 +3,7 @@ fun outer() {
   fun inner() {
     print x;
   }
-
   return inner;
 }
-
 var closure = outer();
 closure();
