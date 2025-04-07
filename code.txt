@@ -1,6 +1,11 @@
-class Brunch {
-  eggs() {}
+class Nested {
+  method() {
+    fun function() {
+      print this;
+    }
+
+    function();
+  }
 }
 
-var brunch = Brunch();
-var eggs = brunch.eggs;
+Nested().method();
